@@ -1,0 +1,36 @@
+Claro. Para manter o SkyBank **sério, fintech e consistente**, eu fecharia a paleta assim:
+
+### 🎨 Paleta oficial do SkyBank
+
+| Uso                    | Cor              | Hexadecimal |
+| ---------------------- | ---------------- | ----------- |
+| 🌑 Fundo principal     | Azul quase preto | `#0B1120`   |
+| 🟦 Fundo secundário    | Azul escuro      | `#111827`   |
+| 💳 Cards               | Azul ardósia     | `#172033`   |
+| 🔲 Cards elevados      | Azul mais claro  | `#1E293B`   |
+| 🔵 Cor principal       | Azul SkyBank     | `#2563EB`   |
+| 🔷 Hover / destaque    | Azul vivo        | `#3B82F6`   |
+| 🩵 Destaque secundário | Ciano            | `#06B6D4`   |
+| ⚪ Texto principal      | Branco suave     | `#F8FAFC`   |
+| 🌫️ Texto secundário   | Cinza claro      | `#CBD5E1`   |
+| 🩶 Texto discreto      | Cinza            | `#94A3B8`   |
+| 🔳 Bordas              | Cinza azulado    | `#334155`   |
+| 🟢 Sucesso             | Verde            | `#22C55E`   |
+| 🟡 Aviso               | Amarelo          | `#F59E0B`   |
+| 🔴 Erro / perigo       | Vermelho         | `#EF4444`   |
+| ⚫ Overlay              | Preto            | `#000000`   |
+
+### 🔥 Combinação principal
+
+A identidade vai girar principalmente em torno de:
+
+**`#0B1120`** → fundo
+**`#111827`** → áreas secundárias
+**`#172033`** → cards
+**`#2563EB`** → acções principais
+**`#06B6D4`** → detalhes/destaques
+**`#F8FAFC`** → texto principal
+
+Isso dá aquele aspecto de **banco digital moderno**, sem ficar demasiado colorido.
+
+E uma regra importante: **verde, amarelo e vermelho serão usados apenas para estados** (sucesso, aviso e erro), não como cores decorativas.

@@ -1,0 +1,22 @@
+.pillarItem:hover{
+    background: #1478b2;
+    color: #002;
+}
+
+@media (max-width:768px){
+    .leftSide{
+        display: none;
+    }
+}
+@media (max-width:480px){
+
+    .leftSide{
+        display: none;
+    }
+}
+@media (max-width:350px){
+
+    .leftSide{
+        display: none;
+    }
+}

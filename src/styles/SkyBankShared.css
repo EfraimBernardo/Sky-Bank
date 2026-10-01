@@ -1,0 +1,225 @@
+/* PALETA OFICIAL SKYBANK */
+:root {
+  --bg-primary: #0B1120;
+  --bg-secondary: #111827;
+  --bg-card: #071022;
+  --bg-card-slate: #172033;
+  --bg-card-elevated: #1E293B;
+  --primary-blue: #0070f3;
+  --primary-hover: #3B82F6;
+  --accent-cyan: #06B6D4;
+  --text-main: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-dim: #64748B;
+  --border-color: rgba(20, 120, 178, 0.25);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #040914;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #060d1d;
+}
+::-webkit-scrollbar-thumb {
+  background: #172033;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0070f3;
+}
+
+/* Base button and interactive resets */
+button {
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+input, select, textarea {
+  font-family: inherit;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sky-toast {
+  animation: slideUp 0.3s ease;
+}
+
+/* RESPONSIVIDADE GERAL */
+
+/* Tablets Grandes e Laptops (< 1180px) */
+@media (max-width: 1180px) {
+  .sky-dashboard-grid {
+    grid-template-columns: 1.4fr 1fr !important;
+  }
+  .sky-col3 {
+    grid-column: span 2;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .sky-col3 > div:last-child {
+    grid-column: span 2;
+  }
+}
+
+/* Tablets e Dispositivos Médios (< 880px) */
+@media (max-width: 880px) {
+  .sky-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px !important;
+    height: 100vh !important;
+    transform: translateX(-100%);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.7);
+    z-index: 150 !important;
+  }
+
+  .sky-sidebar.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  .sky-hamburger {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sky-dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sky-col3 {
+    grid-column: span 1 !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .sky-col3 > div:last-child {
+    grid-column: span 1 !important;
+  }
+
+  .sky-transfers-grid,
+  .sky-loans-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Smartphones e Telas Pequenas (< 640px) */
+@media (max-width: 640px) {
+  .sky-header {
+    padding: 12px 14px !important;
+  }
+
+  .sky-date-display {
+    display: none !important;
+  }
+
+  .sky-user-details {
+    display: none !important;
+  }
+
+  .sky-main-content {
+    padding: 12px 14px !important;
+  }
+
+  .sky-quick-actions {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .sky-form-row {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .sky-banner {
+    flex-direction: column !important;
+    gap: 12px !important;
+    text-align: left;
+  }
+
+  .sky-banner img {
+    align-self: flex-start;
+  }
+
+  .sky-toast {
+    left: 14px !important;
+    right: 14px !important;
+    bottom: 14px !important;
+  }
+}
+
+/* Responsividade específica para a tela de Login / Registo */
+@media (max-width: 980px) {
+  .sky-auth-container {
+    flex-direction: column !important;
+    padding: 24px 16px !important;
+    justify-content: center !important;
+    gap: 20px !important;
+  }
+
+  .sky-auth-left {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    padding: 10px !important;
+    text-align: center;
+    align-items: center !important;
+  }
+
+  .sky-auth-left .pillarsContainer {
+    justify-content: center !important;
+  }
+
+  .sky-auth-right {
+    width: 100% !important;
+    max-width: 600px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .sky-auth-left {
+    display: none !important;
+  }
+
+  .sky-auth-card {
+    padding: 24px 18px !important;
+  }
+
+  .sky-stepper-label {
+    display: none !important;
+  }
+}
