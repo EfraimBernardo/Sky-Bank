@@ -44,6 +44,8 @@ export default function LoginScreen() {
   const [forgotSuccess, setForgotSuccess] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [newAccountDetails, setNewAccountDetails] = useState(null);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -52,6 +54,10 @@ export default function LoginScreen() {
 
   const handleLoginSubmit = (e) => {
     e?.preventDefault();
+    if (isLocked) {
+      setErrorMessage('Atingiu o limite de 3 tentativas de acesso. A conta está temporariamente impedida de entrar por motivos de segurança.');
+      return;
+    }
     if (!loginIdentifier.trim()) {
       setErrorMessage('Por favor, introduza o seu nome, email ou número de conta.');
       return;
@@ -60,8 +66,75 @@ export default function LoginScreen() {
       setErrorMessage('Por favor, introduza a sua palavra-passe.');
       return;
     }
+
+    // Regra: Máximo de 3 tentativas de acesso falhadas
+    if (loginPassword.length < 4) {
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+      if (newAttempts >= 3) {
+        setIsLocked(true);
+        setErrorMessage('Atingiu o limite de 3 tentativas de acesso. A conta foi temporariamente impedida de entrar.');
+        return;
+      }
+      setErrorMessage(`Palavra-passe inválida. Tentativa ${newAttempts} de 3.`);
+      return;
+    }
+
     // Login com sucesso
+    setLoginAttempts(0);
     loginUser(loginIdentifier, loginPassword);
+  };
+
+  const calculateAgeAndTier = (birthDateStr) => {
+    if (!birthDateStr) return null;
+    const birthYear = new Date(birthDateStr).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+    if (age < 12) {
+      return { eligible: false, message: 'A idade mínima para abertura de conta no SkyBank é de 12 anos.' };
+    }
+    if (age >= 12 && age <= 14) {
+      return {
+        eligible: true,
+        tier: 'Mini',
+        age,
+        maxBalance: '200.000 Kz',
+        monthlyLimit: '50.000 Kz',
+        canBorrow: false,
+        desc: 'Conta Mini: Autonomia protegida para jovens dos 12 aos 14 anos.',
+      };
+    }
+    if (age >= 15 && age < 18) {
+      return {
+        eligible: true,
+        tier: 'Básica',
+        age,
+        maxBalance: '500.000 Kz',
+        monthlyLimit: '100.000 Kz',
+        canBorrow: true,
+        desc: 'Conta Básica: Acesso a cartão, transferências e microcrédito.',
+      };
+    }
+    if (age >= 18 && age < 25) {
+      return {
+        eligible: true,
+        tier: 'Intermédia',
+        age,
+        maxBalance: '1.000.000 Kz',
+        monthlyLimit: '200.000 Kz',
+        canBorrow: true,
+        desc: 'Conta Intermédia: Limites expandidos até 1.000.000 Kz.',
+      };
+    }
+    return {
+      eligible: true,
+      tier: 'Completa',
+      age,
+      maxBalance: 'Sem limite',
+      monthlyLimit: '800.000 Kz',
+      canBorrow: true,
+      desc: 'Conta Completa: Sem teto de saldo e limite de transações até 800.000 Kz/mês.',
+    };
   };
 
   const handleNextStep = () => {
@@ -78,6 +151,13 @@ export default function LoginScreen() {
       if (!formData.phone.trim()) {
         setErrorMessage('Por favor, introduza o seu número de telefone.');
         return;
+      }
+      if (formData.birthDate) {
+        const tierInfo = calculateAgeAndTier(formData.birthDate);
+        if (tierInfo && !tierInfo.eligible) {
+          setErrorMessage(tierInfo.message);
+          return;
+        }
       }
       setCurrentStep(2);
     } else if (currentStep === 2) {
@@ -116,15 +196,21 @@ export default function LoginScreen() {
       return;
     }
 
-    // Criar conta simulada
-    const generatedAccount = `SB-0000${Math.floor(2000 + Math.random() * 7000)}`;
+    const tierInfo = calculateAgeAndTier(formData.birthDate);
+    const assignedTier = tierInfo?.tier || 'Básica';
+
+    // Formato oficial do número de conta: SB-000000001 (9 dígitos)
+    const randomSeq = Math.floor(2 + Math.random() * 9999999);
+    const generatedAccount = `SB-${String(randomSeq).padStart(9, '0')}`;
     const generatedIban = `AO06.0000.${Math.floor(1000 + Math.random() * 9000)}.0000.5421.1`;
 
+    // Bónus inicial oficial: 20.000 Kz
     setNewAccountDetails({
       name: formData.fullName,
       account: generatedAccount,
       iban: generatedIban,
-      bonus: '50.000,00 Kz',
+      bonus: '20.000,00 Kz',
+      tier: assignedTier,
     });
 
     setRegistrationSuccess(true);
@@ -433,12 +519,13 @@ export default function LoginScreen() {
 
                   <div style={styles.formRow} className="sky-form-row">
                     <div style={styles.inputGroup}>
-                      <label style={styles.label}>Data de nascimento</label>
+                      <label style={styles.label}>Data de nascimento *</label>
                       <input
                         type="date"
                         value={formData.birthDate}
                         onChange={(e) => handleInputChange('birthDate', e.target.value)}
                         style={styles.input}
+                        required
                       />
                     </div>
 
@@ -458,6 +545,35 @@ export default function LoginScreen() {
                       </select>
                     </div>
                   </div>
+
+                  {formData.birthDate && (() => {
+                    const tierInfo = calculateAgeAndTier(formData.birthDate);
+                    if (!tierInfo) return null;
+                    if (!tierInfo.eligible) {
+                      return (
+                        <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', borderRadius: '8px', padding: '10px 14px', marginBottom: '14px', fontSize: '12px', color: '#ef4444' }}>
+                          ⚠️ {tierInfo.message}
+                        </div>
+                      );
+                    }
+                    return (
+                      <div style={{ backgroundColor: '#0a152e', border: '1px solid rgba(0, 112, 243, 0.3)', borderRadius: '8px', padding: '12px 14px', marginBottom: '14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>Nível de Conta Atribuído:</span>
+                          <span style={{ fontSize: '11px', fontWeight: 'bold', backgroundColor: 'rgba(0, 112, 243, 0.2)', color: '#0070f3', padding: '2px 8px', borderRadius: '6px' }}>
+                            {tierInfo.tier} ({tierInfo.age} anos)
+                          </span>
+                        </div>
+                        <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                          {tierInfo.desc}
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '6px', fontSize: '10px', color: '#64748b' }}>
+                          <span>Saldo Máx: <strong style={{ color: '#ffffff' }}>{tierInfo.maxBalance}</strong></span>
+                          <span>Limite Mensal: <strong style={{ color: '#ffffff' }}>{tierInfo.monthlyLimit}</strong></span>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <div style={styles.formActions}>
                     <button

@@ -34,15 +34,28 @@ export default function LoansScreen() {
     });
   };
 
-  // Cálculo financeiro do simulador
-  const interestRate = 8.5; // taxa base para o nível Basic
-  const totalInterest = loanAmount * (interestRate / 100) * (termMonths / 12);
+  // Cálculo financeiro do simulador oficial (Requisitos v1.0)
+  const interestRate = 10.0; // Juros oficiais: 10%
+  const openingFee = 2500; // Taxa automática: 2.500 Kz
+  const latePenalty = 5.0; // Penalização por atraso: 5%
+  const totalInterest = loanAmount * (interestRate / 100);
   const totalRepayment = loanAmount + totalInterest;
   const estimatedMonthly = Math.round(totalRepayment / termMonths);
+  const netDisbursement = Math.max(0, loanAmount - openingFee);
 
   const handleApply = (e) => {
     e.preventDefault();
     setErrorMessage('');
+
+    if (user.status === 'Suspensa') {
+      setErrorMessage('A sua conta está Suspensa. Durante o período de suspensão não é permitido solicitar empréstimos.');
+      return;
+    }
+
+    if (user.tier === 'Mini') {
+      setErrorMessage('A conta de nível Mini (12–14 anos) não tem autorização para solicitar empréstimos de acordo com os requisitos do SkyBank.');
+      return;
+    }
 
     if (loanAmount <= 0) {
       setErrorMessage('O montante do empréstimo deve ser superior a zero.');
@@ -124,19 +137,30 @@ export default function LoansScreen() {
 
         <div style={styles.tierComparison}>
           <div style={styles.tierMiniItem}>
-            <span style={{ fontSize: '10px', color: '#0070f3', fontWeight: 'bold' }}>BASIC (Atual)</span>
-            <span style={{ fontSize: '11px', color: '#ffffff' }}>Até 250.000 Kz • 8.5%</span>
+            <span style={{ fontSize: '10px', color: '#06b6d4', fontWeight: 'bold' }}>MINI (12-14a)</span>
+            <span style={{ fontSize: '11px', color: '#cbd5e1' }}>Não autorizado</span>
           </div>
           <div style={styles.tierMiniItem}>
-            <span style={{ fontSize: '10px', color: '#94a3b8' }}>SILVER ⭐</span>
-            <span style={{ fontSize: '11px', color: '#cbd5e1' }}>Até 500.000 Kz • 7.0%</span>
+            <span style={{ fontSize: '10px', color: '#0070f3', fontWeight: 'bold' }}>BÁSICA (15+a)</span>
+            <span style={{ fontSize: '11px', color: '#cbd5e1' }}>50k a 150k Kz</span>
           </div>
           <div style={styles.tierMiniItem}>
-            <span style={{ fontSize: '10px', color: '#94a3b8' }}>GOLD 🏆</span>
-            <span style={{ fontSize: '11px', color: '#cbd5e1' }}>Até 1.500.000 Kz • 5.5%</span>
+            <span style={{ fontSize: '10px', color: '#cbd5e1' }}>INTERMÉDIA</span>
+            <span style={{ fontSize: '11px', color: '#cbd5e1' }}>200k a 500k Kz</span>
+          </div>
+          <div style={styles.tierMiniItem}>
+            <span style={{ fontSize: '10px', color: '#f59e0b' }}>COMPLETA</span>
+            <span style={{ fontSize: '11px', color: '#cbd5e1' }}>600k a 1M Kz</span>
           </div>
         </div>
       </div>
+
+      {/* ALERTA DE ELEGIBILIDADE PARA NÍVEL MINI */}
+      {user.tier === 'Mini' && (
+        <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', borderRadius: '10px', padding: '14px 18px', color: '#ef4444', fontSize: '13px', lineHeight: '1.5' }}>
+          🚫 <strong>Restrição de Nível Mini:</strong> A conta Mini (faixa etária dos 12 aos 14 anos) é uma conta protegida e não tem permissão para solicitar empréstimos de acordo com os requisitos e regras de negócio do SkyBank. Os empréstimos estarão disponíveis quando completar 15 anos e transitar para a conta Básica.
+        </div>
+      )}
 
       {/* GRID PRINCIPAL: EMPRÉSTIMO ATIVO + SIMULADOR */}
       <div style={styles.mainGrid} className="sky-loans-grid">
@@ -364,7 +388,7 @@ export default function LoansScreen() {
               </select>
             </div>
 
-            {/* RESUMO DO CÁLCULO FINANCEIRO */}
+            {/* RESUMO DO CÁLCULO FINANCEIRO (Requisitos v1.0) */}
             <div style={styles.calcSummaryBox}>
               <div style={styles.calcRow}>
                 <span style={styles.calcLabel}>Prestação Mensal Estimada:</span>
@@ -373,8 +397,20 @@ export default function LoansScreen() {
                 </strong>
               </div>
               <div style={styles.calcRow}>
-                <span style={styles.calcLabel}>Taxa de Juro Anual:</span>
-                <span style={styles.calcVal}>{interestRate}% (Nível Basic)</span>
+                <span style={styles.calcLabel}>Taxa de Juro Oficial:</span>
+                <span style={styles.calcVal}>{interestRate}%</span>
+              </div>
+              <div style={styles.calcRow}>
+                <span style={styles.calcLabel}>Taxa Automática de Abertura:</span>
+                <span style={{ ...styles.calcVal, color: '#f59e0b' }}>{formatKz(openingFee)} Kz</span>
+              </div>
+              <div style={styles.calcRow}>
+                <span style={styles.calcLabel}>Valor Líquido a Desembolsar:</span>
+                <strong style={{ ...styles.calcVal, color: '#06b6d4' }}>{formatKz(netDisbursement)} Kz</strong>
+              </div>
+              <div style={styles.calcRow}>
+                <span style={styles.calcLabel}>Penalização por Atraso:</span>
+                <span style={styles.calcVal}>{latePenalty}%</span>
               </div>
               <div style={styles.calcRow}>
                 <span style={styles.calcLabel}>Total de Juros Estimados:</span>

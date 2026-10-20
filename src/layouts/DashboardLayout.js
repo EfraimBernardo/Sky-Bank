@@ -28,7 +28,10 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-      const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      const months = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
       const dateStr = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
       setCurrentTime(timeStr);
       setCurrentDate(dateStr);
@@ -39,16 +42,16 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
     return () => clearInterval(interval);
   }, []);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = (notifications || []).filter((n) => !n.read).length;
 
   const menuItems = [
     { name: 'Dashboard', screen: 'dashboard', icon: <HomeIcon /> },
+    { name: 'Carteira', screen: 'carteira', icon: <WalletIcon /> },
     { name: 'Transferências', screen: 'transferencias', icon: <TransferIcon /> },
+    { name: 'Pagamentos', screen: 'pagamentos', icon: <CreditCardIcon /> },
     { name: 'Empréstimos', screen: 'emprestimos', icon: <CoinsIcon /> },
-    { name: 'Carteira', screen: 'carteira_modal', icon: <WalletIcon /> },
-    { name: 'Pagamentos', screen: 'pagamentos_modal', icon: <CreditCardIcon /> },
     { name: 'Notificações', screen: 'notificacoes_modal', icon: <BellIcon />, badge: unreadCount },
-    { name: 'Perfil', screen: 'perfil_modal', icon: <UserIcon /> },
+    { name: 'Perfil', screen: 'perfil', icon: <UserIcon /> },
   ];
 
   const handleNavClick = (item) => {
@@ -57,11 +60,7 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
       setNotificationsOpen(true);
       return;
     }
-    if (['dashboard', 'transferencias', 'emprestimos'].includes(item.screen)) {
-      navigateTo(item.screen);
-    } else {
-      showToastNotification(`Módulo de ${item.name} integrado na sua conta SkyBank.`);
-    }
+    navigateTo(item.screen);
   };
 
   const copyToClipboard = (text, label) => {
@@ -89,7 +88,7 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
         }}
       >
         <div>
-          <div style={styles.sidebarHeader}>
+          <div style={styles.sidebarHeader} onClick={() => navigateTo('dashboard')} role="button" tabIndex={0}>
             <div style={styles.logoBadge}>
               <img src={Logo} alt="Logo" style={styles.sidebarLogoImg} />
             </div>
@@ -118,6 +117,23 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
                 </button>
               );
             })}
+
+            {/* ATALHO PARA PORTAL ADMIN */}
+            <div style={{ marginTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '10px' }}>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigateTo('admin');
+                }}
+                style={{
+                  ...styles.navItem,
+                  ...(activeTab === 'Admin' ? styles.navItemActiveAdmin : styles.navItemAdmin),
+                }}
+              >
+                <span style={styles.navIcon}><ShieldIcon /></span>
+                <span style={styles.navLabel}>Portal Admin</span>
+              </button>
+            </div>
           </nav>
         </div>
 
@@ -152,7 +168,6 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
         {/* CABEÇALHO SUPERIOR */}
         <header style={styles.header} className="sky-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* BOTÃO HAMBURGUER PARA MOBILE/TABLET */}
             <button
               style={styles.hamburgerBtn}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -165,19 +180,25 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
             <span style={{ fontSize: '26px' }}>👋</span>
             <div>
               <h1 style={styles.greetingTitle}>Olá, {user.shortName}!</h1>
-              <p style={styles.greetingSubtitle}>Bem-vindo de volta ao SkyBank.</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <p style={styles.greetingSubtitle}>Bem-vindo ao SkyBank.</p>
+                <span style={styles.headerTierTag}>{user.tier} {user.tierIcon}</span>
+                {user.status !== 'Activa' && (
+                  <span style={styles.headerStatusWarning}>Conta {user.status}</span>
+                )}
+              </div>
             </div>
           </div>
 
           <div style={styles.headerRight} className="sky-header-right">
             <div style={styles.dateDisplay} className="sky-date-display">
-              <span>{currentDate || 'Seg, 23 de Junho de 2025'}</span>
+              <span>{currentDate || 'Segunda-feira'}</span>
               <strong style={{ fontSize: '14px', color: '#ffffff', display: 'block', textAlign: 'right' }}>
-                {currentTime || '19:42'}
+                {currentTime || '12:00'}
               </strong>
             </div>
 
-            {/* BOTÃO NOTIFICAÇÕES RÁPIDO */}
+            {/* BOTÃO NOTIFICAÇÕES */}
             <button
               onClick={() => setNotificationsOpen(true)}
               style={styles.headerBellBtn}
@@ -214,7 +235,9 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
                 <div style={styles.dropdownMenu} className="sky-dropdown-menu">
                   <div style={styles.dropdownHeader}>
                     <div style={{ fontWeight: '600', color: '#ffffff', fontSize: '13px' }}>{user.name}</div>
-                    <div style={{ fontSize: '11px', color: '#0070f3' }}>Nível {user.tier} {user.tierIcon}</div>
+                    <div style={{ fontSize: '11px', color: '#0070f3' }}>
+                      Nível {user.tier} {user.tierIcon} • Estado: {user.status}
+                    </div>
                   </div>
 
                   <div
@@ -224,7 +247,7 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
                       setUserDropdownOpen(false);
                     }}
                   >
-                    <span>Copiar Conta: {user.accountNumber}</span>
+                    <span>📋 Copiar Conta: {user.accountNumber}</span>
                   </div>
 
                   <div
@@ -234,7 +257,19 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
                       setUserDropdownOpen(false);
                     }}
                   >
-                    <span>Copiar IBAN</span>
+                    <span>🏦 Copiar IBAN</span>
+                  </div>
+
+                  <div style={styles.dropdownDivider} />
+
+                  <div
+                    style={styles.dropdownItem}
+                    onClick={() => {
+                      navigateTo('carteira');
+                      setUserDropdownOpen(false);
+                    }}
+                  >
+                    <span>💳 A Minha Carteira</span>
                   </div>
 
                   <div
@@ -244,7 +279,17 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
                       setUserDropdownOpen(false);
                     }}
                   >
-                    <span>Transferências</span>
+                    <span>⇄ Transferências</span>
+                  </div>
+
+                  <div
+                    style={styles.dropdownItem}
+                    onClick={() => {
+                      navigateTo('pagamentos');
+                      setUserDropdownOpen(false);
+                    }}
+                  >
+                    <span>⚡ Pagamentos & Serviços</span>
                   </div>
 
                   <div
@@ -254,7 +299,27 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
                       setUserDropdownOpen(false);
                     }}
                   >
-                    <span>Empréstimos</span>
+                    <span>🪙 Empréstimos Digitais</span>
+                  </div>
+
+                  <div
+                    style={styles.dropdownItem}
+                    onClick={() => {
+                      navigateTo('perfil');
+                      setUserDropdownOpen(false);
+                    }}
+                  >
+                    <span>⚙️ O Meu Perfil & Segurança</span>
+                  </div>
+
+                  <div
+                    style={{ ...styles.dropdownItem, color: '#f59e0b' }}
+                    onClick={() => {
+                      navigateTo('admin');
+                      setUserDropdownOpen(false);
+                    }}
+                  >
+                    <span>🛡️ Portal de Administração</span>
                   </div>
 
                   <div style={styles.dropdownDivider} />
@@ -266,13 +331,26 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
                       logoutUser();
                     }}
                   >
-                    <span>Terminar Sessão</span>
+                    <span>🚪 Terminar Sessão</span>
                   </div>
                 </div>
               )}
             </div>
           </div>
         </header>
+
+        {/* ALERTA DE CONTA SUSPENSA / BLOQUEADA SE APLICÁVEL */}
+        {user.status === 'Suspensa' && (
+          <div style={styles.suspendedWarningBar}>
+            <span>⚠️ <strong>Atenção:</strong> A tua conta encontra-se atualmente no estado <strong>Suspensa</strong>. De acordo com as regras do SkyBank, durante a suspensão apenas poderás consultar a tua carteira e receber dinheiro. Envio de transferências e empréstimos estão bloqueados temporariamente.</span>
+          </div>
+        )}
+
+        {user.status === 'Bloqueada' && (
+          <div style={{ ...styles.suspendedWarningBar, backgroundColor: 'rgba(239, 68, 68, 0.2)', borderColor: '#ef4444', color: '#ef4444' }}>
+            <span>🚫 <strong>Conta Bloqueada:</strong> A tua conta foi bloqueada por motivos de segurança. Contacte a equipa de suporte ou administração SkyBank.</span>
+          </div>
+        )}
 
         {/* ÁREA DE CONTEÚDO RENDERIZADA */}
         <main style={styles.mainContent} className="sky-main-content">
@@ -308,7 +386,7 @@ export default function DashboardLayout({ children, activeTab = 'Dashboard' }) {
             </div>
 
             <div style={styles.notificationsList}>
-              {notifications.map((notif) => (
+              {(notifications || []).map((notif) => (
                 <div
                   key={notif.id}
                   onClick={() => markNotificationAsRead(notif.id)}
@@ -395,6 +473,11 @@ const UserIcon = () => (
     <circle cx="12" cy="7" r="4" />
   </svg>
 );
+const ShieldIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+);
 const MenuIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <line x1="3" y1="12" x2="21" y2="12" />
@@ -422,7 +505,7 @@ const styles = {
     overflowX: 'hidden',
   },
   sidebar: {
-    width: '210px',
+    width: '215px',
     backgroundColor: '#060d1d',
     borderRight: '1px solid rgba(20, 120, 178, 0.15)',
     padding: '20px 12px',
@@ -448,11 +531,12 @@ const styles = {
   },
   sidebarHeader: {
     textAlign: 'center',
-    marginBottom: '24px',
+    marginBottom: '20px',
+    cursor: 'pointer',
   },
   logoBadge: {
-    width: '60px',
-    height: '60px',
+    width: '56px',
+    height: '56px',
     borderRadius: '50%',
     margin: '0 auto 8px auto',
     background: 'radial-gradient(circle, #bf953f 0%, #000 70%)',
@@ -461,7 +545,7 @@ const styles = {
     justifyContent: 'center',
   },
   sidebarLogoImg: {
-    width: '50px',
+    width: '46px',
   },
   sidebarLogoText: {
     fontSize: '20px',
@@ -498,6 +582,16 @@ const styles = {
   navItemActive: {
     backgroundColor: '#0070f3',
     color: '#ffffff',
+    fontWeight: '600',
+  },
+  navItemAdmin: {
+    color: '#f59e0b',
+    backgroundColor: 'rgba(245, 158, 11, 0.05)',
+  },
+  navItemActiveAdmin: {
+    backgroundColor: '#f59e0b',
+    color: '#071022',
+    fontWeight: '700',
   },
   navIcon: {
     display: 'flex',
@@ -590,6 +684,22 @@ const styles = {
     color: '#64748b',
     margin: 0,
   },
+  headerTierTag: {
+    fontSize: '10px',
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    color: '#f59e0b',
+    padding: '2px 6px',
+    borderRadius: '6px',
+  },
+  headerStatusWarning: {
+    fontSize: '10px',
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    color: '#ef4444',
+    padding: '2px 6px',
+    borderRadius: '6px',
+  },
   headerRight: {
     display: 'flex',
     alignItems: 'center',
@@ -661,7 +771,7 @@ const styles = {
     border: '1px solid rgba(20, 120, 178, 0.3)',
     borderRadius: '8px',
     padding: '8px 0',
-    minWidth: '220px',
+    minWidth: '240px',
     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
     zIndex: 110,
   },
@@ -682,12 +792,19 @@ const styles = {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     margin: '4px 0',
   },
+  suspendedWarningBar: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderBottom: '1px solid #f59e0b',
+    color: '#f59e0b',
+    padding: '10px 24px',
+    fontSize: '12px',
+    lineHeight: '1.4',
+  },
   mainContent: {
     flex: 1,
     padding: '16px 24px',
     overflowY: 'auto',
   },
-  /* MODAL */
   modalBackdrop: {
     position: 'fixed',
     top: 0,

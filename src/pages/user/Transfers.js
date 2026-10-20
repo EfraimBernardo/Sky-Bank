@@ -15,14 +15,43 @@ export default function TransfersScreen() {
   // Tipo de transferência: 'skybank' (interna) ou 'iban' (outros bancos)
   const [transferType, setTransferType] = useState('skybank');
 
-  // Contactos frequentes
+  // Contactos frequentes e directório de pesquisa SkyBank
   const frequentContacts = [
-    { name: 'Maria Silva', account: 'SB-00000012', iban: 'AO06.0000.0012.0000.8492.1', avatar: '👩' },
-    { name: 'João Pedro', account: 'SB-00000003', iban: 'AO06.0000.0003.0000.3214.7', avatar: '👨' },
-    { name: 'Ana Santos', account: 'SB-00000045', iban: 'AO06.0000.0045.0000.6721.4', avatar: '👩‍💼' },
-    { name: 'Carlos Mendes', account: 'SB-00000088', iban: 'AO06.0000.0088.0000.9902.3', avatar: '👨‍💼' },
+    {
+      name: 'Maria Silva',
+      account: 'SB-000000012',
+      phone: '+244 912 345 678',
+      email: 'maria.silva@email.ao',
+      iban: 'AO06.0000.0012.0000.8492.1',
+      avatar: '👩',
+    },
+    {
+      name: 'João Pedro',
+      account: 'SB-000000003',
+      phone: '+244 934 567 890',
+      email: 'joao.pedro@empresa.ao',
+      iban: 'AO06.0000.0003.0000.3214.7',
+      avatar: '👨',
+    },
+    {
+      name: 'Ana Santos',
+      account: 'SB-000000045',
+      phone: '+244 925 112 233',
+      email: 'ana.santos@consulting.ao',
+      iban: 'AO06.0000.0045.0000.6721.4',
+      avatar: '👩‍💼',
+    },
+    {
+      name: 'Carlos Mendes',
+      account: 'SB-000000088',
+      phone: '+244 946 789 123',
+      email: 'carlos.m@tecnologia.ao',
+      iban: 'AO06.0000.0088.0000.9902.3',
+      avatar: '👨‍💼',
+    },
   ];
 
+  const [searchRecipientQuery, setSearchRecipientQuery] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [recipientAccount, setRecipientAccount] = useState('');
   const [recipientIban, setRecipientIban] = useState('');
@@ -46,8 +75,20 @@ export default function TransfersScreen() {
     setRecipientName(contact.name);
     setRecipientAccount(contact.account);
     setRecipientIban(contact.iban);
+    setSearchRecipientQuery(contact.name);
     setErrorMessage('');
   };
+
+  const matchingContacts = frequentContacts.filter((c) => {
+    if (!searchRecipientQuery.trim()) return false;
+    const q = searchRecipientQuery.toLowerCase();
+    return (
+      c.name.toLowerCase().includes(q) ||
+      c.account.toLowerCase().includes(q) ||
+      c.phone.includes(q) ||
+      c.email.toLowerCase().includes(q)
+    );
+  });
 
   const handleAddQuickAmount = (val) => {
     const current = parseFloat(amount) || 0;
@@ -57,6 +98,16 @@ export default function TransfersScreen() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessage('');
+
+    if (user.status === 'Suspensa') {
+      setErrorMessage('A sua conta está Suspensa. Durante o período de suspensão apenas é permitido consultar o saldo e receber dinheiro.');
+      return;
+    }
+
+    if (user.status === 'Bloqueada' || user.status === 'Encerrada') {
+      setErrorMessage(`Operação não permitida. A sua conta está no estado ${user.status}.`);
+      return;
+    }
 
     if (!recipientName.trim()) {
       setErrorMessage('Por favor, informe o nome do destinatário.');
@@ -76,6 +127,12 @@ export default function TransfersScreen() {
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       setErrorMessage('Por favor, introduza um montante válido.');
+      return;
+    }
+
+    // Regra oficial: Mínimo 200 Kz para todos os níveis
+    if (numAmount < 200) {
+      setErrorMessage('O valor mínimo por transferência é de 200 Kz para todos os níveis.');
       return;
     }
 
@@ -203,8 +260,40 @@ export default function TransfersScreen() {
             </button>
           </div>
 
+          {/* PESQUISA DE DESTINATÁRIOS (TELEFONE, NOME, EMAIL OU CONTA) */}
+          <div style={{ margin: '14px 0' }}>
+            <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+              🔍 Pesquisar destinatário por telefone, nome, email ou conta:
+            </label>
+            <input
+              type="text"
+              placeholder="Digite +244 9xx, nome, email ou SB-..."
+              value={searchRecipientQuery}
+              onChange={(e) => setSearchRecipientQuery(e.target.value)}
+              style={styles.input}
+            />
+
+            {matchingContacts.length > 0 && (
+              <div style={{ backgroundColor: '#0a152e', border: '1px solid rgba(0, 112, 243, 0.3)', borderRadius: '8px', marginTop: '6px', overflow: 'hidden' }}>
+                {matchingContacts.map((c) => (
+                  <div
+                    key={c.account}
+                    onClick={() => handleSelectContact(c)}
+                    style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  >
+                    <div>
+                      <strong style={{ fontSize: '12px', color: '#ffffff' }}>{c.name}</strong>
+                      <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>{c.account} • {c.phone} • {c.email}</span>
+                    </div>
+                    <span style={{ fontSize: '11px', color: '#0070f3', fontWeight: 'bold' }}>Selecionar →</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* CONTACTOS FREQUENTES */}
-          <div style={{ margin: '14px 0 18px 0' }}>
+          <div style={{ margin: '10px 0 16px 0' }}>
             <span style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '8px' }}>
               Destinatários frequentes:
             </span>

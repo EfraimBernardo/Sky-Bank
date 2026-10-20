@@ -187,14 +187,14 @@ export default function DashboardScreen() {
 
             <button
               style={styles.actionBtn}
-              onClick={() => setWalletModalOpen(true)}
-              title="Ver detalhes da carteira"
+              onClick={() => navigateTo('carteira')}
+              title="Aceder à Carteira Digital"
             >
               <div style={styles.actionCircle}>
                 <WalletIcon />
               </div>
-              <strong style={styles.actionTitle}>Ver carteira</strong>
-              <span style={styles.actionSub}>Ver detalhes</span>
+              <strong style={styles.actionTitle}>Carteira</strong>
+              <span style={styles.actionSub}>Saldos & Cartões</span>
             </button>
           </div>
 
